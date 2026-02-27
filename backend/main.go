@@ -1,3 +1,4 @@
+// mainだよ
 package main
 
 import (
