@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arakou0812/backend/model"
-	"github.com/arakou0812/backend/repository"
+	"github.com/arakou0812/backend/keijiban/model"
+	"github.com/arakou0812/backend/keijiban/repository"
 )
 
 // 【カスタムエラーの定義】

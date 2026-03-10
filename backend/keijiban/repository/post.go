@@ -6,7 +6,7 @@ package repository
 import (
 	"database/sql"
 
-	"github.com/arakou0812/backend/model"
+	"github.com/arakou0812/backend/keijiban/model"
 )
 
 // PostRepository: データベース操作を行う本体です。

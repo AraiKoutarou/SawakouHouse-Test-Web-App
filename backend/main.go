@@ -2,10 +2,10 @@
 package main
 
 import (
-	"github.com/arakou0812/backend/db"
-	"github.com/arakou0812/backend/handler"
-	"github.com/arakou0812/backend/repository"
-	"github.com/arakou0812/backend/service"
+	"github.com/arakou0812/backend/keijiban/db"
+	"github.com/arakou0812/backend/keijiban/handler"
+	"github.com/arakou0812/backend/keijiban/repository"
+	"github.com/arakou0812/backend/keijiban/service"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +40,7 @@ func main() {
 
 	// 【5】ルーティングの設定（URLと処理の紐付け）
 	// 「どのURL」に「どんな命令（GET/POST等）」が来たら「どの関数」を動かすか決めます。
-	r.GET("/posts", postHandler.GetPosts)         // 投稿一覧の取得
+	r.GET("/posts", postHandler.GetPosts)          // 投稿一覧の取得
 	r.POST("/posts", postHandler.CreatePost)       // 新規投稿の作成
 	r.GET("/posts/:id", postHandler.GetPost)       // 特定の投稿1件の取得
 	r.DELETE("/posts/:id", postHandler.DeletePost) // 投稿の削除

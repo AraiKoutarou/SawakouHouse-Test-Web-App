@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/arakou0812/backend/service"
+	"github.com/arakou0812/backend/keijiban/service"
 	"github.com/gin-gonic/gin"
 )
 
