@@ -7,7 +7,7 @@ async function main() {
   const prNumber = process.env.PR_NUMBER;
   const repoOwner = process.env.REPO_OWNER;
   const repoName = process.env.REPO_NAME;
-  const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
   if (!geminiApiKey || !githubToken || !prNumber) {
     console.error('必要な環境変数が設定されていません');
