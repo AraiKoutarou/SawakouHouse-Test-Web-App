@@ -15,21 +15,30 @@ Go（バックエンド）+ Next.js（フロントエンド）の掲示板アプ
 
 ```
 SawakouHouse-Test-Web-App/
-├── backend/          # Go API サーバー
-│   ├── main.go
+├── backend/                   # Go API サーバー
+│   ├── main.go                # エントリポイント
 │   ├── go.mod
-│   ├── handler/      # HTTPハンドラー
-│   ├── model/        # データ構造体
-│   └── db/           # DB接続・テーブル定義
-├── frontend/         # Next.js アプリ
+│   ├── shared/db/             # DB接続（共通）
+│   ├── router/                # ルーティング統合
+│   └── modules/               # 機能モジュール群
+│       └── post/              # 投稿モジュール
+│           ├── module.go      # DI組み立て・公開API
+│           ├── domain/        # エンティティ・インターフェース
+│           ├── usecase/       # ビジネスロジック
+│           ├── handler/       # HTTPハンドラー
+│           └── persistence/   # DB操作実装
+├── frontend/                  # Next.js アプリ
 │   └── src/app/
-│       ├── page.tsx          # 投稿一覧
+│       ├── page.tsx           # 投稿一覧
 │       └── posts/
-│           ├── [id]/page.tsx # 投稿詳細・削除
-│           └── new/page.tsx  # 新規投稿フォーム
+│           ├── [id]/page.tsx  # 投稿詳細・削除
+│           └── new/page.tsx   # 新規投稿フォーム
+├── docs/                      # ドキュメント
 ├── docker-compose.yml
 └── README.md
 ```
+
+> アーキテクチャの詳細は [docs/ARCHITECTURE_GUIDE.md](./ARCHITECTURE_GUIDE.md) を参照してください。
 
 ## 起動方法
 
