@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// TypeScriptの「型定義」：商品データの形を定義して、間違いを防ぎます
+// TypeScriptの「型定義」：商品データの形を定義して、型ミスを防ぎます
+// バックエンドのDBカラム（id, name, price, description, created_at）と対応しています
 type Product = {
   id: number;
   name: string;
@@ -21,28 +22,28 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 【2】データを取得する関数
-  const fetchProducts = async () => {
-    try {
-      // axiosを使って、バックエンドのAPIに「データちょうだい」とリクエストを送ります
-      const res = await axios.get<Product[]>("http://localhost:8080/products");
-      // 成功したら、取得したデータをStateに保存します
-      setProducts(res.data);
-    } catch {
-      // 失敗したら、エラーメッセージをStateに保存します
-      setError("商品の取得に失敗しました。バックエンドが起動しているか確認してください。");
-    } finally {
-      // 成功しても失敗しても、読み込みは終わったので false にします
-      setLoading(false);
-    }
-  };
-
-  // 【3】useEffect：画面が表示された瞬間に実行したい処理を書きます
+  // 【2】useEffect：画面が表示された瞬間に実行したい処理を書きます
+  // [] は「最初の1回だけ実行する」という意味です
   useEffect(() => {
-    fetchProducts();
-  }, []); // [] は「最初の1回だけ実行する」という意味です
+    const fetchProducts = async () => {
+      try {
+        // バックエンドの /products エンドポイントにGETリクエストを送ります
+        // axios.get<Product[]>(...) で「Product型の配列が返ってくる」と教えています
+        const res = await axios.get<Product[]>("http://localhost:8080/products");
+        setProducts(res.data); // 取得したデータをStateに保存
+      } catch {
+        // 通信に失敗した場合（バックエンドが起動していない、エラーレスポンスなど）
+        setError("商品データの取得に失敗しました。バックエンドが起動しているか確認してください。");
+      } finally {
+        // 成功・失敗どちらの場合も、読み込み中フラグをfalseにします
+        setLoading(false);
+      }
+    };
 
-  // 【4】JSX：画面の見た目を返します
+    fetchProducts();
+  }, []);
+
+  // 【3】JSX：画面の見た目を返します
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
       {/* ヘッダー部分 */}
@@ -53,24 +54,35 @@ export default function ProductsPage() {
 
       {/* 状態に応じた表示の切り替え（条件付きレンダリング） */}
       {loading && <p className="text-gray-500">読み込み中...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
       {!loading && !error && products.length === 0 && (
         <p className="text-gray-400">商品が登録されていません。</p>
       )}
 
       {/* 商品リストの表示 */}
+      {/* map関数を使って、productsの中身を1つずつループして表示します */}
       <ul className="space-y-4">
         {products.map((product) => (
-          // map関数を使って、productsの中身を1つずつループして表示します
           <li
             key={product.id}
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition"
           >
             {/* 商品名と価格を横並びに表示 */}
             <div className="flex items-start justify-between gap-4">
-              <h2 className="text-xl font-semibold text-gray-800">{product.name}</h2>
+              <div className="flex items-center gap-2">
+                {/* IDバッジ */}
+                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                  #{product.id}
+                </span>
+                <h2 className="text-xl font-semibold text-gray-800">{product.name}</h2>
+              </div>
               {/* 価格は目立つように大きめ・緑色で表示 */}
+              {/* toLocaleString("ja-JP") で 1000 → 1,000 のようにカンマ区切りにします */}
               <span className="text-lg font-bold text-green-600 whitespace-nowrap">
                 ¥{product.price.toLocaleString("ja-JP")}
               </span>
@@ -81,7 +93,7 @@ export default function ProductsPage() {
 
             {/* 登録日時 */}
             <div className="mt-3 text-xs text-gray-400">
-              {/* 日付を見やすい形式に変換して表示します */}
+              {/* new Date(...).toLocaleString("ja-JP") で日付を見やすい形式に変換します */}
               登録日: {new Date(product.created_at).toLocaleString("ja-JP")}
             </div>
           </li>
