@@ -1,0 +1,13 @@
+{
+  "name": "gemini-code-review",
+  "version": "1.0.0",
+  "description": "Gemini AI Code Review Script",
+  "main": "gemini-review.js",
+  "scripts": {
+    "review": "node gemini-review.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@octokit/rest": "^21.0.2"
+  }
+}
