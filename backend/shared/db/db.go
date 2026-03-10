@@ -1,3 +1,5 @@
+// shared/db: アプリ全体で共有するDB接続を管理します。
+// テーブルの作成など、モジュール固有の処理はここには書きません。
 package db
 
 import (
@@ -9,9 +11,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var DB *sql.DB
-
-func Init() {
+// Connect: 環境変数からDB接続情報を読み取り、接続済みの *sql.DB を返します。
+func Connect() *sql.DB {
 	host := getEnv("DB_HOST", "localhost")
 	port := getEnv("DB_PORT", "5433")
 	user := getEnv("DB_USER", "user")
@@ -21,34 +22,17 @@ func Init() {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	var err error
-	DB, err = sql.Open("postgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("DB接続失敗: %v", err)
 	}
 
-	if err = DB.Ping(); err != nil {
+	if err = db.Ping(); err != nil {
 		log.Fatalf("DBへのping失敗: %v", err)
 	}
 
 	log.Println("DB接続成功")
-	createTable()
-}
-
-func createTable() {
-	query := `
-	CREATE TABLE IF NOT EXISTS posts (
-		id         SERIAL PRIMARY KEY,
-		title      VARCHAR(255) NOT NULL,
-		content    TEXT NOT NULL,
-		author     VARCHAR(100) NOT NULL,
-		created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-	);`
-
-	if _, err := DB.Exec(query); err != nil {
-		log.Fatalf("テーブル作成失敗: %v", err)
-	}
-	log.Println("postsテーブル確認完了")
+	return db
 }
 
 func getEnv(key, defaultVal string) string {
