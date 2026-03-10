@@ -35,10 +35,21 @@ async function main() {
 
   // Gemini APIでレビュー
   const genAI = new GoogleGenerativeAI(geminiApiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-1.5-flash',
+    generationConfig: {
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 8192,
+    },
+  });
 
-  const prompt = `あなたはシニアエンジニアとして、以下のプルリクエストのコードレビューを行ってください。
-以下の点に注目して日本語で回答してください：
+  const prompt = `あなたはシニアエンジニアです。以下のプルリクエストのコードレビューを日本語で実施してください。
+
+重要: 必ず日本語でレビューを記述してください。英語は使用しないでください。
+
+以下の点に注目してください：
 1. バグや潜在的なエラーの指摘
 2. コードの可読性と保守性の向上案
 3. セキュリティ上の懸念点
