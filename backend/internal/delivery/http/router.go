@@ -1,4 +1,4 @@
-// internal/delivery/http/router.go: ルーティングと共通設定を担当します。
+// internal/delivery/http/router.go: ルーティング定義。
 package http
 
 import (
@@ -8,10 +8,10 @@ import (
 )
 
 // SetupRouter: Ginエンジンを生成し、ルートを登録します。
-func SetupRouter(postHandler *handler.PostHandler) *gin.Engine {
+func SetupRouter(locationHandler *handler.LocationHandler) *gin.Engine {
 	r := gin.Default()
 
-	// CORS設定
+	// CORS設定: フロントエンド(localhost:3000)からのアクセスを許可します。
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "DELETE", "OPTIONS"},
@@ -20,10 +20,8 @@ func SetupRouter(postHandler *handler.PostHandler) *gin.Engine {
 	}))
 
 	// ルート登録
-	r.GET("/posts", postHandler.GetPosts)
-	r.POST("/posts", postHandler.CreatePost)
-	r.GET("/posts/:id", postHandler.GetPost)
-	r.DELETE("/posts/:id", postHandler.DeletePost)
+	r.GET("/locations", locationHandler.GetLocations)
+	r.POST("/locations", locationHandler.CreateLocation)
 
 	return r
 }
