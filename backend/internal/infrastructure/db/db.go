@@ -1,5 +1,4 @@
-// shared/db: アプリ全体で共有するDB接続を管理します。
-// テーブルの作成など、モジュール固有の処理はここには書きません。
+// internal/infrastructure/db/db.go: DB接続を管理します。
 package db
 
 import (
@@ -11,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Connect: 環境変数からDB接続情報を読み取り、接続済みの *sql.DB を返します。
+// Connect: 環境変数から接続情報を読み取り、DBインスタンスを返します。
 func Connect() *sql.DB {
 	host := getEnv("DB_HOST", "localhost")
 	port := getEnv("DB_PORT", "5433")
