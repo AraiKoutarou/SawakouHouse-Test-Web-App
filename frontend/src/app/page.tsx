@@ -1,88 +1,127 @@
-"use client"; // このファイルがブラウザで動く「クライアントコンポーネント」であることを示します
+'use client'
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import axios from "axios";
+import { APIProvider } from '@vis.gl/react-google-maps'
+import { useState, useEffect, useMemo } from 'react'
+import GoogleMap from './components/Map'
+import { Header } from './components/Header'
+import { MemoryCard } from './components/MemoryCard'
 
-// TypeScriptの「型定義」：投稿データの形を定義して、間違いを防ぎます
-type Post = {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  created_at: string;
-};
+interface Location {
+  id: number
+  place_id: string
+  title: string
+  address: string
+  prefecture: string
+  category: string
+  comment: string
+  color: string
+  latitude: number
+  longitude: number
+}
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+const MAP_ID = process.env.NEXT_PUBLIC_MAP_ID || 'DEMO_MAP_ID';
 
 export default function Home() {
-  // 【1】State（状態）の定義
-  // posts: バックエンドから取得した投稿リストを保存します
-  // loading: 読み込み中かどうかを管理します（trueなら「読み込み中...」と表示）
-  // error: エラーが起きた時にそのメッセージを保存します
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<Location[]>([])
 
-  // 【2】データを取得する関数
-  const fetchPosts = async () => {
+  const fetchLocations = async () => {
     try {
-      // axiosを使って、バックエンドのAPIに「データちょうだい」とリクエストを送ります
-      const res = await axios.get<Post[]>("http://localhost:8080/posts");
-      // 成功したら、取得したデータをStateに保存します
-      setPosts(res.data);
-    } catch {
-      // 失敗したら、エラーメッセージをStateに保存します
-      setError("投稿の取得に失敗しました。バックエンドが起動しているか確認してください。");
-    } finally {
-      // 成功しても失敗しても、読み込みは終わったので false にします
-      setLoading(false);
+      const res = await fetch('http://localhost:8080/locations')
+      if (res.ok) {
+        const data = await res.json()
+        setLocations(data || [])
+      }
+    } catch (err) {
+      console.error('Fetch error:', err)
     }
-  };
+  }
 
-  // 【3】useEffect：画面が表示された瞬間に実行したい処理を書きます
   useEffect(() => {
-    fetchPosts();
-  }, []); // [] は「最初の1回だけ実行する」という意味です
+    fetchLocations()
+  }, [])
 
-  // 【4】JSX：画面の見た目を返します
+  const addLocation = async (data: Partial<Location>) => {
+    try {
+      const res = await fetch('http://localhost:8080/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+
+      if (res.ok) {
+        fetchLocations()
+      }
+    } catch (err) {
+      console.error('Save error:', err)
+    }
+  }
+
+  const visitedPrefectures = useMemo(() => {
+    const prefs = new Set(locations.map(l => l.prefecture).filter(p => p !== ''))
+    return Array.from(prefs)
+  }, [locations])
+
+  const completionRate = Math.round((visitedPrefectures.length / 47) * 100)
+
   return (
-    <main className="max-w-3xl mx-auto px-4 py-8">
-      {/* ヘッダー部分 */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">SawakouHouse 掲示板</h1>
-        <Link
-          href="/posts/new"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition"
-        >
-          新規投稿
-        </Link>
+    <main className="min-h-screen pb-20 bg-slate-50/30">
+      <Header 
+        totalSpots={locations.length} 
+        completionRate={completionRate} 
+        prefecturesCount={visitedPrefectures.length} 
+      />
+
+      <div className="max-w-6xl mx-auto px-4 md:px-6">
+        <section className="mb-16 md:mb-24">
+          <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
+            <GoogleMap locations={locations} mapId={MAP_ID} onAddLocation={addLocation} />
+          </APIProvider>
+        </section>
+
+        <section>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 italic tracking-tighter">JOURNAL</h2>
+              <p className="text-slate-400 font-bold uppercase text-[9px] tracking-[0.3em] mt-1 md:mt-2">Your Magic Moments Timeline</p>
+            </div>
+            
+            {visitedPrefectures.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 md:gap-2 justify-start md:justify-end">
+                {visitedPrefectures.map(pref => (
+                  <span key={pref} className="px-3 py-1 bg-white text-blue-600 text-[9px] font-black rounded-full border border-slate-100 shadow-sm transition-all hover:scale-110">
+                    {pref}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+            {locations.length === 0 ? (
+              <div className="col-span-full py-20 md:py-32 bg-white rounded-[2.5rem] md:rounded-[3.5rem] shadow-inner border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center px-6">
+                <span className="text-5xl md:text-7xl mb-6 animate-bounce">🛸</span>
+                <p className="text-slate-400 font-bold text-lg md:text-2xl leading-relaxed">
+                  まだ記録された思い出はありません。<br/>
+                  <span className="text-blue-600">最初のお店を検索しましょう！</span>
+                </p>
+              </div>
+            ) : (
+              locations.map((loc) => (
+                <MemoryCard key={loc.id} memory={loc} />
+              ))
+            )}
+          </div>
+        </section>
       </div>
 
-      {/* 状態に応じた表示の切り替え（条件付きレンダリング） */}
-      {loading && <p className="text-gray-500">読み込み中...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-
-      {!loading && !error && posts.length === 0 && (
-        <p className="text-gray-400">まだ投稿がありません。最初の投稿をしてみましょう！</p>
-      )}
-
-      {/* 投稿リストの表示 */}
-      <ul className="space-y-4">
-        {posts.map((post) => (
-          // map関数を使って、postsの中身を1つずつループして表示します
-          <li key={post.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
-            <Link href={`/posts/${post.id}`}>
-              <h2 className="text-xl font-semibold text-blue-700 hover:underline mb-1">{post.title}</h2>
-            </Link>
-            <p className="text-gray-600 text-sm line-clamp-2">{post.content}</p>
-            <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
-              <span className="font-medium text-gray-500">{post.author}</span>
-              <span>·</span>
-              {/* 日付を見やすい形式に変換して表示します */}
-              <span>{new Date(post.created_at).toLocaleString("ja-JP")}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <footer className="mt-24 md:mt-40 text-center px-6">
+        <div className="inline-flex items-center gap-4 px-6 md:px-8 py-3 md:py-4 bg-white rounded-full shadow-sm border border-slate-100">
+          <span className="text-slate-300 font-black italic text-[9px] md:text-xs tracking-[0.2em]">&copy; 2026</span>
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
+          <span className="text-slate-400 font-black italic text-[9px] md:text-xs tracking-[0.2em]">MEMORY GLOW EXPLORER</span>
+        </div>
+      </footer>
     </main>
-  );
+  )
 }
