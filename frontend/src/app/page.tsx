@@ -49,12 +49,20 @@ export default function Home() {
       {/* ヘッダー部分 */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-800">SawakouHouse 掲示板</h1>
-        <Link
-          href="/posts/new"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition"
-        >
-          新規投稿
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/map"
+            className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition"
+          >
+            マップ
+          </Link>
+          <Link
+            href="/posts/new"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition"
+          >
+            新規投稿
+          </Link>
+        </div>
       </div>
 
       {/* 状態に応じた表示の切り替え（条件付きレンダリング） */}
