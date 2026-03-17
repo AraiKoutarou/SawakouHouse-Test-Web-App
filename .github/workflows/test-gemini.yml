@@ -1,0 +1,15 @@
+name: Gemini Connection Test
+
+on:
+  workflow_dispatch: # これにより、手動でボタンを押して実行できるようになります
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: API疎通確認
+        run: |
+          curl https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${{ secrets.GEMINI_API_KEY }} \
+          -H 'Content-Type: application/json' \
+          -X POST \
+          -d '{"contents": [{"parts":[{"text": "Hello, are you working?"}]}]}'
