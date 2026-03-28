@@ -1,0 +1,13 @@
+name: Gemini Connection Test
+on: workflow_dispatch # 手動実行用
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check API Connection
+        run: |
+          curl https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${{ secrets.GEMINI_API_KEY }} \
+          -H 'Content-Type: application/json' \
+          -X POST \
+          -d '{"contents": [{"parts":[{"text": "Hello"}]}]}'
